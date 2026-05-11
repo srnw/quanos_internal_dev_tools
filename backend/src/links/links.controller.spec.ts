@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing'
 import { NotFoundException } from '@nestjs/common'
+import { ThrottlerGuard } from '@nestjs/throttler'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { LinksController } from './links.controller'
 import { LinksService } from './links.service'
@@ -32,6 +33,8 @@ describe('LinksController', () => {
       providers: [{ provide: LinksService, useValue: mockLinksService }],
     })
       .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ThrottlerGuard)
       .useValue({ canActivate: () => true })
       .compile()
 

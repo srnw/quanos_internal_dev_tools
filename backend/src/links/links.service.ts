@@ -14,8 +14,15 @@ export class LinksService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     const existing = await this.linksRepository.count()
     if (existing === 0) {
-      await this.linksRepository.insertMany(SEED_LINKS)
-      this.logger.log(`Seeded ${SEED_LINKS.length} links into the database`)
+      try {
+        await this.linksRepository.insertMany(SEED_LINKS)
+        this.logger.log(`Seeded ${SEED_LINKS.length} links into the database`)
+      } catch (err: unknown) {
+        // A concurrent replica won the race and already inserted the seed data;
+        // duplicate-key errors (11000) are benign here.
+        if ((err as { code?: number }).code !== 11000) throw err
+        this.logger.log('Seed skipped — links already present (duplicate key)')
+      }
     }
   }
 

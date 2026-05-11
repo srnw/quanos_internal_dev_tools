@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common'
+import { ThrottlerGuard } from '@nestjs/throttler'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { LinksService } from './links.service'
@@ -30,18 +31,19 @@ export class LinksController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new link' })
   @ApiResponse({ status: 201, description: 'Link created' })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
   create(@Body() dto: CreateLinkDto): Promise<LinkDocument> {
     return this.linksService.create(dto)
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing link' })
   @ApiParam({ name: 'id', description: 'Link UUID' })
@@ -49,12 +51,13 @@ export class LinksController {
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Link not found' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
   update(@Param('id') id: string, @Body() dto: UpdateLinkDto): Promise<LinkDocument> {
     return this.linksService.update(id, dto)
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a link' })
@@ -62,6 +65,7 @@ export class LinksController {
   @ApiResponse({ status: 204, description: 'Link deleted' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Link not found' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
   async delete(@Param('id') id: string): Promise<void> {
     return this.linksService.delete(id)
   }

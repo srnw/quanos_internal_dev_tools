@@ -163,3 +163,31 @@ Two GitHub Actions workflows run on every push and pull request to `main`:
 | Backend CI  | `.github/workflows/backend.yml`  | `backend/**`  |
 
 Each workflow runs lint → type-check → tests with coverage → build. The backend workflow builds a Docker image; the frontend workflow runs `vite build`.
+
+## Security considerations
+
+The following items are conscious trade-offs made for demo/internal-tool simplicity. Each entry notes what a production deployment would require.
+
+### Plain-text password comparison
+
+`AuthService` compares the submitted password against the configured `ADMIN_PASSWORD` using `===`. This is intentional for a single-admin demo: there is no user store, no hashing round-trip, and no persistent state to manage.
+
+**Production guidance:** store credentials in a proper user store, hash passwords at rest with bcrypt or argon2, and use `crypto.timingSafeEqual` (or the hashing library's constant-time compare) when validating to prevent timing-based enumeration attacks.
+
+### JWT stored in `localStorage`
+
+The frontend persists the access token in `localStorage`, which is readable by any JavaScript running on the page. This is an acceptable risk for an internal engineering tool served to a small trusted audience on a controlled network.
+
+**Production guidance:** store the token in an `httpOnly` `Secure` cookie (inaccessible to JS) and pair it with a CSRF token or `SameSite=Strict` policy to prevent cross-site request forgery.
+
+### Rate-limiting on write endpoints (resolved)
+
+`ThrottlerGuard` was previously applied only to `POST /auth/login`, leaving the authenticated write endpoints (`POST /links`, `PATCH /links/:id`, `DELETE /links/:id`) unthrottled despite the global `ThrottlerModule` configuration. `ThrottlerGuard` is now applied to all three write endpoints, making throttle coverage consistent across the API.
+
+### Seed race condition (resolved)
+
+`LinksService.onModuleInit` used a non-atomic `count() → insertMany()` sequence. With concurrent container starts both observing an empty collection, both could attempt seeding and produce duplicate documents. This is now addressed by three layered changes:
+
+1. A `unique` index on the `url` field (enforced at the MongoDB level).
+2. `insertMany` called with `{ ordered: false }` so a partial batch does not abort on the first duplicate.
+3. A `try/catch` in `onModuleInit` that swallows duplicate-key errors (`code 11000`) and logs a skip message, while re-throwing any other error.

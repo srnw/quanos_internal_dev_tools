@@ -24,7 +24,7 @@ export class Link {
   @Prop({ required: true, trim: true })
   title!: string
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, unique: true })
   url!: string
 
   @Prop({ trim: true })

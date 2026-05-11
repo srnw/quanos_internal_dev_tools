@@ -40,6 +40,6 @@ export class LinksRepository {
 
   async insertMany(docs: CreateLinkDto[]): Promise<void> {
     const withIds = docs.map((d) => ({ _id: uuidv4(), ...d }))
-    await this.model.insertMany(withIds)
+    await this.model.insertMany(withIds, { ordered: false })
   }
 }

@@ -24,6 +24,7 @@ Browser
 - **Global validation** — `ValidationPipe` with `class-validator` DTOs rejects malformed input before it reaches the service.
 - **Global exception filter** — `HttpExceptionFilter` produces a consistent JSON error envelope for all error responses.
 - **Config module** — `@nestjs/config` loads environment variables and exposes them as a typed config object throughout the app.
+- **OpenAPI / Swagger** — `@nestjs/swagger` generates interactive API documentation at `/api/docs`.
 
 ## Quick start (Docker)
 
@@ -47,7 +48,8 @@ docker compose up --build
 ```
 
 The frontend is available at **http://localhost** (port 80).  
-The backend API is available at **http://localhost/api** (proxied by nginx).
+The backend API is available at **http://localhost/api** (proxied by nginx).  
+Swagger UI is available at **http://localhost/api/docs** (proxied by nginx).
 
 ### Stop
 
@@ -88,7 +90,8 @@ cp backend/.env.example backend/.env
 pnpm --filter backend start:dev
 ```
 
-The API server starts at **http://localhost:3000**.
+The API server starts at **http://localhost:3000**.  
+Swagger UI is available at **http://localhost:3000/api/docs**.
 
 ### 4. Start the frontend
 
@@ -112,6 +115,7 @@ Copy `.env.example` to `.env` at the repo root for Docker Compose, and `backend/
 | `ADMIN_USERNAME`     | `admin`                        | Admin login username                             |
 | `ADMIN_PASSWORD`     | `admin123`                     | Admin login password                             |
 | `FRONTEND_PORT`      | `80`                           | Host port mapped to the frontend container       |
+| `FRONTEND_URL`       | `http://localhost`             | CORS origin the backend accepts (Docker only)    |
 
 ## Demo credentials
 
@@ -120,6 +124,8 @@ Copy `.env.example` to `.env` at the repo root for Docker Compose, and `backend/
 | `admin`  | `admin123` |
 
 ## API reference
+
+Interactive Swagger UI: **`/api/docs`** (served alongside the API).
 
 All endpoints are prefixed with `/api`.
 
@@ -130,6 +136,8 @@ All endpoints are prefixed with `/api`.
 | `POST`   | `/links`          | JWT  | Create a link            |
 | `PATCH`  | `/links/:id`      | JWT  | Update a link            |
 | `DELETE` | `/links/:id`      | JWT  | Delete a link            |
+
+To authorise in Swagger UI, click **Authorize**, paste the `access_token` value returned by `POST /api/auth/login`, and all protected endpoints will include the `Authorization: Bearer …` header.
 
 ## Running tests
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useLinksStore } from '@/stores/links'
 import type { Link, LinkFormData } from '@/types'
 import AdminLinkForm from '@/components/AdminLinkForm.vue'
@@ -14,38 +14,53 @@ import {
 
 const linksStore = useLinksStore()
 
+onMounted(() => linksStore.fetchLinks())
+
 const formOpen = ref(false)
 const editingLink = ref<Link | null>(null)
+const isSaving = ref(false)
+const saveError = ref<string | null>(null)
 
 const deleteTarget = ref<Link | null>(null)
 
 function openCreate() {
   editingLink.value = null
+  saveError.value = null
   formOpen.value = true
 }
 
 function openEdit(link: Link) {
   editingLink.value = link
+  saveError.value = null
   formOpen.value = true
 }
 
-function handleSave(data: LinkFormData) {
+async function handleSave(data: LinkFormData) {
+  isSaving.value = true
+  saveError.value = null
+  let ok: boolean
   if (editingLink.value) {
-    linksStore.updateLink(editingLink.value.id, data)
+    ok = await linksStore.updateLink(editingLink.value.id, data)
   } else {
-    linksStore.addLink(data)
+    const result = await linksStore.addLink(data)
+    ok = result !== null
   }
-  formOpen.value = false
-  editingLink.value = null
+  isSaving.value = false
+  if (ok) {
+    formOpen.value = false
+    editingLink.value = null
+  } else {
+    saveError.value = 'Failed to save the link. Please try again.'
+  }
 }
 
 function confirmDelete(link: Link) {
   deleteTarget.value = link
 }
 
-function handleDelete() {
+async function handleDelete() {
   if (deleteTarget.value) {
-    linksStore.deleteLink(deleteTarget.value.id)
+    await linksStore.deleteLink(deleteTarget.value.id)
     deleteTarget.value = null
   }
 }
@@ -172,6 +187,7 @@ function handleDelete() {
   <AdminLinkForm
     :open="formOpen"
     :link="editingLink"
+    :error="saveError"
     @close="formOpen = false"
     @save="handleSave"
   />

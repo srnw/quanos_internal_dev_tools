@@ -2,11 +2,12 @@
 import { ref, watch } from 'vue'
 import type { Link, LinkFormData } from '@/types'
 import { CATEGORIES } from '@/types'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+import { XMarkIcon, ExclamationCircleIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   open: boolean
   link?: Link | null
+  error?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -111,6 +112,15 @@ function handleSubmit() {
           </div>
 
           <form class="flex flex-col gap-4 px-6 py-5" @submit.prevent="handleSubmit">
+            <!-- Save error -->
+            <div
+              v-if="props.error"
+              class="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700"
+            >
+              <ExclamationCircleIcon class="h-4 w-4 shrink-0" />
+              {{ props.error }}
+            </div>
+
             <!-- Title -->
             <div>
               <label class="mb-1 block text-xs font-medium text-gray-700" for="form-title">

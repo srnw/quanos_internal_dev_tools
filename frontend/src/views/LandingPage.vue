@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useLinksStore } from '@/stores/links'
 import { CATEGORIES } from '@/types'
 import LinkCard from '@/components/LinkCard.vue'
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/vue/24/outline'
 
 const linksStore = useLinksStore()
+
+onMounted(() => linksStore.fetchLinks())
 
 const search = ref('')
 const activeCategory = ref<string>('All')
@@ -57,6 +59,7 @@ function clearFilters() {
         <input
           v-model="search"
           type="search"
+          aria-label="Search tools"
           placeholder="Search tools…"
           class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
@@ -82,9 +85,16 @@ function clearFilters() {
       </div>
     </div>
 
+    <!-- Loading state -->
+    <div v-if="linksStore.isLoading" class="flex justify-center py-24">
+      <span
+        class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"
+      />
+    </div>
+
     <!-- Cards grid -->
     <div
-      v-if="filteredLinks.length > 0"
+      v-else-if="filteredLinks.length > 0"
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
     >
       <LinkCard v-for="link in filteredLinks" :key="link.id" :link="link" />

@@ -1,27 +1,33 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-
-const MOCK_USERNAME = 'admin'
-const MOCK_PASSWORD = 'admin123'
+import { ref, readonly } from 'vue'
+import { api } from '@/api/client'
 
 export const useAuthStore = defineStore('auth', () => {
-  const isAuthenticated = ref(false)
   const loginError = ref<string | null>(null)
+  const isAuthenticated = ref(api.hasToken())
 
-  function login(username: string, password: string): boolean {
+  async function login(username: string, password: string): Promise<boolean> {
     loginError.value = null
-    if (username === MOCK_USERNAME && password === MOCK_PASSWORD) {
+    try {
+      const data = await api.post<{ access_token: string }>('/auth/login', {
+        username,
+        password,
+      })
+      api.setToken(data.access_token)
       isAuthenticated.value = true
       return true
+    } catch {
+      loginError.value = 'Invalid username or password.'
+      isAuthenticated.value = false
+      return false
     }
-    loginError.value = 'Invalid username or password.'
-    return false
   }
 
   function logout(): void {
+    api.clearToken()
     isAuthenticated.value = false
     loginError.value = null
   }
 
-  return { isAuthenticated, loginError, login, logout }
+  return { isAuthenticated: readonly(isAuthenticated), loginError, login, logout }
 })

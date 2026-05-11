@@ -15,9 +15,7 @@ const isLoading = ref(false)
 async function handleSubmit() {
   if (!username.value || !password.value) return
   isLoading.value = true
-  // Simulate a short async call for UX realism
-  await new Promise((r) => setTimeout(r, 300))
-  const ok = authStore.login(username.value, password.value)
+  const ok = await authStore.login(username.value, password.value)
   isLoading.value = false
   if (ok) {
     router.push({ name: 'admin' })

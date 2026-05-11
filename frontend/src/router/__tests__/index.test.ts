@@ -1,13 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
-// The router is a module-level singleton; we reset navigation and auth state
-// in beforeEach so each test starts from a clean position.
+function mockLoginFetch(ok = true) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok,
+      status: ok ? 200 : 401,
+      json: () => Promise.resolve(ok ? { access_token: 'jwt-token' } : { message: 'Unauthorized' }),
+    }),
+  )
+}
+
 describe('router auth guard', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
+    localStorage.clear()
+    vi.restoreAllMocks()
     await router.push('/')
     await router.isReady()
   })
@@ -28,21 +39,21 @@ describe('router auth guard', () => {
   })
 
   it('allows an authenticated user to navigate to /admin', async () => {
+    mockLoginFetch(true)
     const auth = useAuthStore()
-    auth.login('admin', 'admin123')
+    await auth.login('admin', 'admin123')
     await router.push('/admin')
     expect(router.currentRoute.value.name).toBe('admin')
   })
 
   it('re-blocks access to /admin after logout', async () => {
+    mockLoginFetch(true)
     const auth = useAuthStore()
-    auth.login('admin', 'admin123')
+    await auth.login('admin', 'admin123')
     await router.push('/admin')
     expect(router.currentRoute.value.name).toBe('admin')
 
     auth.logout()
-    // Navigate away first; Vue Router treats push to the current route as a no-op
-    // and would not re-run guards if we pushed '/admin' while already there.
     await router.push('/')
     await router.push('/admin')
     expect(router.currentRoute.value.name).toBe('admin-login')

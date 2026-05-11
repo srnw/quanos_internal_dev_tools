@@ -8,6 +8,7 @@ const props = defineProps<{
   open: boolean
   link?: Link | null
   error?: string | null
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -208,15 +209,21 @@ function handleSubmit() {
             <div class="flex justify-end gap-2 pt-1">
               <button
                 type="button"
-                class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                :disabled="props.loading"
+                class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
                 @click="emit('close')"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                :disabled="props.loading"
+                class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
+                <span
+                  v-if="props.loading"
+                  class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+                />
                 {{ link ? 'Save changes' : 'Add link' }}
               </button>
             </div>

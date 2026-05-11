@@ -188,6 +188,7 @@ async function handleDelete() {
     :open="formOpen"
     :link="editingLink"
     :error="saveError"
+    :loading="isSaving"
     @close="formOpen = false"
     @save="handleSave"
   />

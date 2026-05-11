@@ -24,11 +24,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth) {
-    const auth = useAuthStore()
-    if (!auth.isAuthenticated) {
-      return { name: 'admin-login' }
-    }
+  const auth = useAuthStore()
+
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return { name: 'admin-login' }
+  }
+
+  if (to.name === 'admin-login' && auth.isAuthenticated) {
+    return { name: 'admin' }
   }
 })
 

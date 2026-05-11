@@ -18,10 +18,6 @@ export class LinksRepository {
     return this.model.find().sort({ createdAt: -1 }).exec()
   }
 
-  async findById(id: string): Promise<LinkDocument | null> {
-    return this.model.findById(id).exec()
-  }
-
   async create(dto: CreateLinkDto): Promise<LinkDocument> {
     const doc = new this.model({ _id: uuidv4(), ...dto })
     return doc.save()

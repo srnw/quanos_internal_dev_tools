@@ -21,10 +21,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR
 
+    const res =
+      exception instanceof HttpException ? exception.getResponse() : 'Internal server error'
     const message =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Internal server error'
+      typeof res === 'string' ? res : ((res as Record<string, unknown>).message ?? res)
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(exception)

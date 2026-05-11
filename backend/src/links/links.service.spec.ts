@@ -15,7 +15,6 @@ const mockLink = {
 
 const mockRepo = {
   findAll: jest.fn().mockResolvedValue([mockLink]),
-  findById: jest.fn().mockResolvedValue(mockLink),
   create: jest.fn().mockResolvedValue(mockLink),
   update: jest.fn().mockResolvedValue(mockLink),
   delete: jest.fn().mockResolvedValue(true),
@@ -49,6 +48,21 @@ describe('LinksService', () => {
     }
     const result = await service.create(dto)
     expect(result).toEqual(mockLink)
+  })
+
+  describe('onModuleInit', () => {
+    it('seeds the database when it is empty', async () => {
+      mockRepo.count.mockResolvedValueOnce(0)
+      await service.onModuleInit()
+      expect(mockRepo.insertMany).toHaveBeenCalledTimes(1)
+    })
+
+    it('skips seeding when documents already exist', async () => {
+      mockRepo.count.mockResolvedValueOnce(5)
+      mockRepo.insertMany.mockClear()
+      await service.onModuleInit()
+      expect(mockRepo.insertMany).not.toHaveBeenCalled()
+    })
   })
 
   it('throws NotFoundException when updating a non-existent link', async () => {

@@ -21,7 +21,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
-    const message = typeof body?.message === 'string' ? body.message : `HTTP ${response.status}`
+    const raw = body?.message
+    const message =
+      typeof raw === 'string'
+        ? raw
+        : Array.isArray(raw)
+          ? raw.join(', ')
+          : `HTTP ${response.status}`
     throw new Error(message)
   }
 

@@ -92,6 +92,22 @@ function clearFilters() {
       />
     </div>
 
+    <!-- Error state -->
+    <div
+      v-else-if="linksStore.error"
+      class="flex flex-col items-center justify-center py-24 text-center"
+    >
+      <p class="text-sm font-medium text-red-500">Failed to load tools</p>
+      <p class="mt-1 text-xs text-gray-400">{{ linksStore.error }}</p>
+      <button
+        type="button"
+        class="mt-4 text-xs text-indigo-600 underline hover:text-indigo-800"
+        @click="linksStore.fetchLinks()"
+      >
+        Retry
+      </button>
+    </div>
+
     <!-- Cards grid -->
     <div
       v-else-if="filteredLinks.length > 0"

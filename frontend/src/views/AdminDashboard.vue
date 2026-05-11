@@ -22,6 +22,8 @@ const isSaving = ref(false)
 const saveError = ref<string | null>(null)
 
 const deleteTarget = ref<Link | null>(null)
+const isDeleting = ref(false)
+const deleteError = ref<string | null>(null)
 
 function openCreate() {
   editingLink.value = null
@@ -56,12 +58,19 @@ async function handleSave(data: LinkFormData) {
 
 function confirmDelete(link: Link) {
   deleteTarget.value = link
+  deleteError.value = null
 }
 
 async function handleDelete() {
-  if (deleteTarget.value) {
-    await linksStore.deleteLink(deleteTarget.value.id)
+  if (!deleteTarget.value) return
+  isDeleting.value = true
+  deleteError.value = null
+  const ok = await linksStore.deleteLink(deleteTarget.value.id)
+  isDeleting.value = false
+  if (ok) {
     deleteTarget.value = null
+  } else {
+    deleteError.value = 'Failed to delete the link. Please try again.'
   }
 }
 </script>
@@ -199,8 +208,10 @@ async function handleDelete() {
     :title="`Delete &quot;${deleteTarget?.title}&quot;?`"
     message="This action cannot be undone. The link will be permanently removed."
     confirm-label="Delete"
+    :error="deleteError"
+    :loading="isDeleting"
     @confirm="handleDelete"
-    @cancel="deleteTarget = null"
+    @cancel="deleteTarget = null; deleteError = null"
   >
     <template #icon>
       <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-100">

@@ -162,4 +162,4 @@ Two GitHub Actions workflows run on every push and pull request to `main`:
 | Frontend CI | `.github/workflows/frontend.yml` | `frontend/**` |
 | Backend CI  | `.github/workflows/backend.yml`  | `backend/**`  |
 
-Each workflow runs lint → type-check → tests with coverage → build (Docker image for the backend).
+Each workflow runs lint → type-check → tests with coverage → build. The backend workflow builds a Docker image; the frontend workflow runs `vite build`.
